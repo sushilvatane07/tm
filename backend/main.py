@@ -72,9 +72,11 @@ async def get_current_user(authorization: str = Header(None)):
         import jwt as pyjwt
         from datetime import datetime, timezone
 
-        # Decode without signature verification (Supabase signs with RS256 private key)
-        # We trust the token if: it's a valid JWT, has 'sub', and hasn't expired
-        decoded = pyjwt.decode(token, options={"verify_signature": False})
+        jwt_secret = os.environ.get("SUPABASE_JWT_SECRET")
+        if jwt_secret:
+            decoded = pyjwt.decode(token, jwt_secret, algorithms=["HS256"], options={"verify_aud": False})
+        else:
+            decoded = pyjwt.decode(token, options={"verify_signature": False})
 
         if not decoded or "sub" not in decoded:
             raise HTTPException(status_code=401, detail="Invalid JWT payload")
@@ -563,9 +565,8 @@ async def get_activity_logs(current_user=Depends(get_current_user)):
         except Exception:
             return []
 
-
-
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+    is_dev = os.environ.get("ENVIRONMENT", "production").lower() == "development"
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=is_dev)

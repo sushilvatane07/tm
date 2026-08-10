@@ -1,7 +1,7 @@
-fastapi
-uvicorn
-cryptography
-supabase
-python-dotenv
-python-multipart
-PyJWT
+fastapi>=0.110.0,<1.0.0
+uvicorn[standard]>=0.28.0,<1.0.0
+cryptography>=42.0.0,<45.0.0
+supabase>=2.3.0,<3.0.0
+python-dotenv>=1.0.0,<2.0.0
+python-multipart>=0.0.9,<1.0.0
+PyJWT>=2.8.0,<3.0.0
