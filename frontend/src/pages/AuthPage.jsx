@@ -1,6 +1,7 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { ShieldIcon, ArrowRightIcon, EyeIcon, EyeOffIcon } from "../components/Icons";
 import { supabase } from "../lib/SupabaseClient";
-import { ShieldIcon, ShieldCheckIcon, EyeIcon, EyeOffIcon } from "../components/Icons";
+import "../styles/index.css"; // Ensure it gets base tokens
 
 export default function AuthPage({ onBackToLanding, initialMode = "signin" }) {
   const [mode, setMode] = useState(initialMode);
@@ -11,17 +12,6 @@ export default function AuthPage({ onBackToLanding, initialMode = "signin" }) {
   const [message, setMessage] = useState(null);
 
   const isSignUp = mode === "signup";
-
-  function getPasswordStrength(pass) {
-    if (!pass) return { score: 0, label: "", color: "" };
-    if (pass.length < 6) return { score: 1, label: "Weak", color: "#ef4444" };
-    if (pass.length >= 6 && /[A-Z]/.test(pass) && /[0-9]/.test(pass)) {
-      return { score: 3, label: "Strong", color: "#10b981" };
-    }
-    return { score: 2, label: "Medium", color: "#f59e0b" };
-  }
-
-  const strength = getPasswordStrength(password);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -47,169 +37,182 @@ export default function AuthPage({ onBackToLanding, initialMode = "signin" }) {
     }
   }
 
-  async function handleMagicLink() {
-    if (!email) {
-      setMessage({ type: "error", text: "Please enter your email address first." });
-      return;
-    }
-
-    setMessage(null);
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ email });
-    setLoading(false);
-    if (error) {
-      setMessage({ type: "error", text: error.message });
-    } else {
-      setMessage({ type: "success", text: "Magic OTP link sent! Check your email inbox." });
-    }
-  }
-
   return (
-    <div className="auth-page-container">
-      <div className="auth-orb orb-cyan" />
-      <div className="auth-orb orb-violet" />
+    <div className="auth-page-container ts-page" style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      minHeight: '100vh',
+      padding: '24px'
+    }}>
+      <div className="auth-shell" style={{ 
+        maxWidth: '440px', 
+        width: '100%',
+        position: 'relative'
+      }}>
+        {onBackToLanding && (
+          <button className="ts-link-btn" onClick={onBackToLanding} style={{ 
+            position: 'absolute', 
+            top: '-48px', 
+            left: '0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}>
+            <ArrowRightIcon size={14} style={{ transform: 'rotate(180deg)' }} /> Back to site
+          </button>
+        )}
 
-      <div className="auth-split-wrapper">
-        {/* Left Side: Product Security Showcase */}
-        <div className="auth-showcase-panel">
-          <div className="showcase-brand">
-            <span className="auth-shield-logo">
-              <ShieldIcon size={24} color="#ffffff" />
-            </span>
-            <span className="auth-brand-name">
-              Trust<span className="brand-accent">Share</span>
-            </span>
-          </div>
-
-          <div className="showcase-content">
-            <span className="showcase-pill">
-              <ShieldCheckIcon size={14} /> ZERO-KNOWLEDGE ENCRYPTION
-            </span>
-            <h2>Encrypted File Sharing Built For Reliability</h2>
-            <p>
-              Join thousands of professionals exchanging confidential files with server-side AES-256 Fernet key isolation and expiring link protection.
-            </p>
-
-            <div className="showcase-features">
-              <div className="showcase-feat-item">
-                <span className="feat-check">✓</span> Per-file encryption key generation
-              </div>
-              <div className="showcase-feat-item">
-                <span className="feat-check">✓</span> Self-destructing temporary access links
-              </div>
-              <div className="showcase-feat-item">
-                <span className="feat-check">✓</span> Real-time audit activity timeline
-              </div>
+        <div className="auth-card glass-panel" style={{ 
+          padding: '48px 40px',
+          borderRadius: '24px',
+          background: 'var(--panel-solid)',
+          border: '1px solid var(--panel-border)',
+          boxShadow: 'var(--shadow-glass)'
+        }}>
+          <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+            <div className="auth-shield-logo" style={{ 
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '48px',
+              height: '48px',
+              borderRadius: '14px',
+              marginBottom: '20px', 
+              background: 'var(--text-hi)', 
+              color: 'var(--bg-dark)' 
+            }}>
+              <ShieldIcon size={24} />
             </div>
+            <h2 className="ts-h1" style={{ fontSize: '1.75rem', marginBottom: '8px' }}>
+              {isSignUp ? "Create account" : "Welcome back"}
+            </h2>
+            <p className="ts-lead" style={{ margin: 0, fontSize: '0.95rem' }}>
+              {isSignUp ? "Get started with secure file sharing" : "Sign in to access your secure vault"}
+            </p>
           </div>
-        </div>
 
-        {/* Right Side: Auth Form Shell */}
-        <div className="auth-shell">
-          {onBackToLanding && (
-            <button type="button" className="auth-back-btn" onClick={onBackToLanding}>
-              ← Back to Overview
-            </button>
+          {message && (
+            <div className={`alert alert-${message.type}`} style={{ 
+              marginBottom: '24px',
+              padding: '12px 16px',
+              borderRadius: '12px',
+              background: message.type === 'error' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
+              color: message.type === 'error' ? '#ef4444' : '#15803d',
+              fontSize: '0.9rem',
+              fontWeight: '500'
+            }}>
+              {message.text}
+            </div>
           )}
 
-          <div className="auth-card">
-            <div className="card-eyebrow">SUPABASE AUTH</div>
-            <h1 className="card-title">{isSignUp ? "Create Account" : "Welcome Back"}</h1>
-            <p className="card-subtitle">
-              {isSignUp
-                ? "Enter your credentials to create an encrypted storage workspace."
-                : "Sign in to access your encrypted file vault."}
-            </p>
-
-            <form onSubmit={handleSubmit} className="form">
-              <label className="field">
-                <span>Email Address</span>
+          <form className="form" onSubmit={handleSubmit}>
+            <div className="field" style={{ marginBottom: '20px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '8px', 
+                fontSize: '0.9rem', 
+                fontWeight: '500', 
+                color: 'var(--text-hi)' 
+              }}>Email Address</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@company.com"
+                required
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  border: '1px solid var(--panel-border)',
+                  background: 'var(--bg-dark)',
+                  color: 'var(--text-hi)',
+                  fontSize: '0.95rem',
+                  outline: 'none',
+                  transition: 'border-color 0.2s'
+                }}
+              />
+            </div>
+            
+            <div className="field" style={{ marginBottom: '28px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '8px', 
+                fontSize: '0.9rem', 
+                fontWeight: '500', 
+                color: 'var(--text-hi)' 
+              }}>Password</label>
+              <div style={{ position: 'relative' }}>
                 <input
-                  type="email"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
                   required
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@company.com"
-                  className="auth-input"
+                  style={{
+                    width: '100%',
+                    padding: '12px 40px 12px 16px',
+                    borderRadius: '12px',
+                    border: '1px solid var(--panel-border)',
+                    background: 'var(--bg-dark)',
+                    color: 'var(--text-hi)',
+                    fontSize: '0.95rem',
+                    outline: 'none',
+                    transition: 'border-color 0.2s'
+                  }}
                 />
-              </label>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-lo)',
+                    cursor: 'pointer',
+                    padding: '4px'
+                  }}
+                >
+                  {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
+                </button>
+              </div>
+            </div>
 
-              <label className="field">
-                <span>Password</span>
-                <div className="input-icon-wrap">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    minLength={6}
-                    autoComplete={isSignUp ? "new-password" : "current-password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="auth-input"
-                  />
-                  <button
-                    type="button"
-                    className="toggle-password-btn"
-                    onClick={() => setShowPassword(!showPassword)}
-                    title={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
-                  </button>
-                </div>
-              </label>
+            <button type="submit" className="ts-btn ts-btn-primary" disabled={loading} style={{ 
+              width: '100%', 
+              padding: '14px',
+              justifyContent: 'center',
+              fontSize: '1rem'
+            }}>
+              {loading ? "Authenticating..." : (isSignUp ? "Create Account" : "Sign In")}
+            </button>
+          </form>
 
-              {/* Password Strength Meter */}
-              {isSignUp && password.length > 0 && (
-                <div className="strength-meter-wrap">
-                  <div className="strength-meter-bar">
-                    <div
-                      className="strength-meter-fill"
-                      style={{
-                        width: `${(strength.score / 3) * 100}%`,
-                        backgroundColor: strength.color,
-                      }}
-                    />
-                  </div>
-                  <span className="strength-label" style={{ color: strength.color }}>
-                    Strength: {strength.label}
-                  </span>
-                </div>
-              )}
-
-              {message && (
-                <div className={`alert alert-${message.type}`} role="status">
-                  {message.text}
-                </div>
-              )}
-
-              <button type="submit" className="btn-primary auth-submit-btn" disabled={loading}>
-                {loading ? "Authenticating…" : isSignUp ? "Create Account" : "Sign In to Vault"}
-              </button>
-
-              <button
-                type="button"
-                className="btn-ghost magic-link-btn"
-                onClick={handleMagicLink}
-                disabled={loading}
-              >
-                ✨ Send Magic OTP Link
-              </button>
-            </form>
-
-            <div className="card-footer">
-              {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-              <button
-                type="button"
-                className="link-btn toggle-mode-btn"
+          <div style={{ 
+            marginTop: '32px', 
+            textAlign: 'center',
+            paddingTop: '24px',
+            borderTop: '1px solid var(--panel-border)'
+          }}>
+            <p style={{ margin: 0, color: 'var(--text-lo)', fontSize: '0.95rem' }}>
+              {isSignUp ? "Already have an account?" : "Don't have an account?"}
+              <button 
+                type="button" 
+                className="ts-inline-link" 
                 onClick={() => {
                   setMode(isSignUp ? "signin" : "signup");
                   setMessage(null);
                 }}
+                style={{ marginLeft: '6px' }}
               >
-                {isSignUp ? "Sign In" : "Sign Up"}
+                {isSignUp ? "Log in" : "Sign up"} <ArrowRightIcon size={12} />
               </button>
-            </div>
+            </p>
           </div>
         </div>
       </div>

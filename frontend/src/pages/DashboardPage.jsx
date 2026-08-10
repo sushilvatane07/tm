@@ -35,9 +35,10 @@ export default function DashboardPage({ activeTab = "files", onTabChange }) {
   const { themeMode } = useTheme();
 
   const [files, setFiles] = useState([]);
+  const [loadingFiles, setLoadingFiles] = useState(true);
   const [shareLinks, setShareLinks] = useState([]);
   const [activityLogs, setActivityLogs] = useState([]);
-  
+
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
   const [downloadingId, setDownloadingId] = useState(null);
@@ -53,51 +54,51 @@ export default function DashboardPage({ activeTab = "files", onTabChange }) {
     setTimeout(() => setToastMessage(null), 4500);
   }
 
-  // Fetch files — runs once per userId (stable string dep, not object)
+  // Fetch initial files & activity logs on mount
   useEffect(() => {
     if (!user?.id) return;
     const userId = user.id;
     let cancelled = false;
 
-    async function fetchUserFiles() {
-      // On production (GitHub Pages), FastAPI is not running — go direct to Supabase
-      const isLocalDev = window.location.hostname === "localhost";
+    async function fetchUserData() {
+      setLoadingFiles(true);
 
-      if (isLocalDev) {
-        try {
-          const res = await fetchWithTimeout(`${API_URL}/files`, {
-            headers: { Authorization: `Bearer ${session?.access_token}` },
-          }, 3000);
-          if (res?.ok && !cancelled) {
-            const data = await res.json();
-            if (Array.isArray(data)) { setFiles(data); return; }
-          }
-        } catch (err) {
-          console.warn("FastAPI /files unavailable, using Supabase directly");
-        }
-      }
-
-      // Direct Supabase query — works on GitHub Pages
+      // 1. Fetch files
       try {
-        const { data, error } = await supabase
+        const { data: fileData, error: fileErr } = await supabase
           .from("files")
           .select("*")
           .eq("owner_id", userId)
           .order("created_at", { ascending: false });
 
-        if (!error && !cancelled) {
-          setFiles((data || []).filter((f) => !f.is_deleted));
-        } else if (error) {
-          console.error("Files fetch error:", error.message);
+        if (!fileErr && !cancelled && Array.isArray(fileData)) {
+          setFiles(fileData);
         }
       } catch (err) {
-        console.error("Supabase files fetch error:", err);
+        console.warn("Direct Supabase files query notice:", err);
       }
+
+      // 2. Fetch activity logs immediately on page load
+      try {
+        const { data: actData, error: actErr } = await supabase
+          .from("activity_logs")
+          .select("*")
+          .eq("actor_id", userId)
+          .order("created_at", { ascending: false });
+
+        if (!actErr && !cancelled && Array.isArray(actData)) {
+          setActivityLogs(actData);
+        }
+      } catch (err) {
+        console.warn("Direct Supabase activity logs query notice:", err);
+      }
+
+      if (!cancelled) setLoadingFiles(false);
     }
 
-    fetchUserFiles();
+    fetchUserData();
     return () => { cancelled = true; };
-  }, [user?.id]); // user?.id is a stable string — safe dep
+  }, [user?.id]);
 
   // File Upload Handler
   async function handleUpload(selectedFile) {
@@ -105,31 +106,7 @@ export default function DashboardPage({ activeTab = "files", onTabChange }) {
     setUploading(true);
     setUploadError(null);
 
-    const isLocalDev = window.location.hostname === "localhost";
-
-    // Only try FastAPI when running locally
-    if (isLocalDev) {
-      try {
-        const formData = new FormData();
-        formData.append("file", selectedFile);
-        const response = await fetchWithTimeout(`${API_URL}/upload`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${session?.access_token}` },
-          body: formData,
-        }, 5000);
-        if (response?.ok) {
-          const result = await response.json();
-          setFiles((prev) => [{ id: result.file_id, filename: selectedFile.name, size_bytes: selectedFile.size, created_at: new Date().toISOString() }, ...prev]);
-          showToast(`"${selectedFile.name}" encrypted and uploaded!`, "success");
-          setUploading(false);
-          return;
-        }
-      } catch (err) {
-        console.warn("FastAPI upload unavailable, using Supabase storage directly");
-      }
-    }
-
-    // Direct Supabase Storage upload (works on GitHub Pages)
+    // Direct Supabase Storage upload (works locally & in production)
     try {
       const storagePath = `${user.id}/${Date.now()}_${selectedFile.name}`;
 
@@ -147,7 +124,6 @@ export default function DashboardPage({ activeTab = "files", onTabChange }) {
           size_bytes: selectedFile.size,
           storage_path: storagePath,
           encryption_key: "AES256_CLIENT",
-          is_deleted: false,
         }])
         .select();
 
@@ -155,6 +131,19 @@ export default function DashboardPage({ activeTab = "files", onTabChange }) {
 
       const inserted = dbData?.[0] || { filename: selectedFile.name, size_bytes: selectedFile.size, created_at: new Date().toISOString() };
       setFiles((prev) => [inserted, ...prev]);
+
+      // Activity log insertion
+      const actEntry = {
+        actor_id: user.id,
+        action: `You uploaded ${selectedFile.name}`,
+        resource_type: "file",
+        resource_id: inserted.id ? String(inserted.id) : selectedFile.name,
+        severity: "info",
+        created_at: new Date().toISOString(),
+      };
+      setActivityLogs((prev) => [actEntry, ...prev]);
+      try { await supabase.from("activity_logs").insert([actEntry]); } catch (e) {}
+
       showToast(`"${selectedFile.name}" uploaded to vault!`, "success");
     } catch (err) {
       console.error("Upload error:", err);
@@ -185,6 +174,19 @@ export default function DashboardPage({ activeTab = "files", onTabChange }) {
         a.click();
         a.remove();
         window.URL.revokeObjectURL(blobUrl);
+
+        // Activity log insertion for download
+        const actEntry = {
+          actor_id: user.id,
+          action: `You downloaded ${file.filename}`,
+          resource_type: "file",
+          resource_id: String(file.id),
+          severity: "info",
+          created_at: new Date().toISOString(),
+        };
+        setActivityLogs((prev) => [actEntry, ...prev]);
+        try { await supabase.from("activity_logs").insert([actEntry]); } catch (e) {}
+
         showToast(`Downloaded decrypted "${file.filename}"`, "info");
         setDownloadingId(null);
         return;
@@ -206,6 +208,19 @@ export default function DashboardPage({ activeTab = "files", onTabChange }) {
         a.click();
         a.remove();
         window.URL.revokeObjectURL(blobUrl);
+
+        // Activity log insertion for download
+        const actEntry = {
+          actor_id: user.id,
+          action: `You downloaded ${file.filename}`,
+          resource_type: "file",
+          resource_id: String(file.id),
+          severity: "info",
+          created_at: new Date().toISOString(),
+        };
+        setActivityLogs((prev) => [actEntry, ...prev]);
+        try { await supabase.from("activity_logs").insert([actEntry]); } catch (e) {}
+
         showToast(`Downloaded "${file.filename}" from vault`, "info");
       } else {
         throw new Error("File storage path unavailable");
@@ -227,19 +242,34 @@ export default function DashboardPage({ activeTab = "files", onTabChange }) {
       setDeletingId(file.id);
 
       // 1. Try FastAPI delete
-      const res = await fetchWithTimeout(`${API_URL}/files/${file.id}`, {
+      fetchWithTimeout(`${API_URL}/files/${file.id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${session?.access_token}` },
-      }, 3000);
+      }, 3000).catch(() => null);
 
       // 2. Direct Supabase Delete Fallback
       if (file.storage_path) {
-        await supabase.storage.from("trustshare-files").remove([file.storage_path]).catch(() => null);
+        try { await supabase.storage.from("trustshare-files").remove([file.storage_path]); } catch (e) {}
       }
-      await supabase.from("share_links").delete().eq("file_id", file.id).catch(() => null);
-      await supabase.from("files").delete().eq("id", file.id).catch(() => null);
+      try { await supabase.from("share_links").delete().eq("file_id", file.id); } catch (e) {}
+      try { await supabase.from("files").delete().eq("id", file.id); } catch (e) {}
 
       setFiles((prev) => prev.filter((f) => f.id !== file.id));
+
+      // Log activity event to Supabase
+      if (user?.id) {
+        const actEntry = {
+          actor_id: user.id,
+          action: `You deleted ${file.filename}`,
+          resource_type: "file",
+          resource_id: String(file.id),
+          severity: "warn",
+          created_at: new Date().toISOString(),
+        };
+        setActivityLogs((prev) => [actEntry, ...prev]);
+        try { await supabase.from("activity_logs").insert([actEntry]); } catch (e) {}
+      }
+
       showToast(`Deleted "${file.filename}"`, "warn");
     } catch (err) {
       showToast(`Delete failed: ${err.message}`, "error");
@@ -257,10 +287,10 @@ export default function DashboardPage({ activeTab = "files", onTabChange }) {
     for (const id of fileIds) {
       const file = files.find((f) => f.id === id);
       if (file?.storage_path) {
-        await supabase.storage.from("trustshare-files").remove([file.storage_path]).catch(() => null);
+        try { await supabase.storage.from("trustshare-files").remove([file.storage_path]); } catch (e) {}
       }
-      await supabase.from("share_links").delete().eq("file_id", id).catch(() => null);
-      await supabase.from("files").delete().eq("id", id).catch(() => null);
+      try { await supabase.from("share_links").delete().eq("file_id", id); } catch (e) {}
+      try { await supabase.from("files").delete().eq("id", id); } catch (e) {}
     }
 
     setFiles((prev) => prev.filter((f) => !fileIds.includes(f.id)));
@@ -309,7 +339,9 @@ export default function DashboardPage({ activeTab = "files", onTabChange }) {
           {activeTab === "overview" && (
             <OverviewTab
               files={files}
+              loadingFiles={loadingFiles}
               shareLinks={shareLinks}
+              activityLogs={activityLogs}
               totalStorageBytes={totalStorageBytes}
               onUploadFile={handleUpload}
               onShareClick={(f) => setSharingFile(f)}
@@ -324,6 +356,7 @@ export default function DashboardPage({ activeTab = "files", onTabChange }) {
           {activeTab === "files" && (
             <MyFilesTab
               files={files}
+              loadingFiles={loadingFiles}
               onUploadFile={handleUpload}
               onShareClick={(f) => setSharingFile(f)}
               onPreviewFile={(f) => setPreviewingFile(f)}
@@ -372,7 +405,21 @@ export default function DashboardPage({ activeTab = "files", onTabChange }) {
           file={sharingFile}
           session={session}
           onClose={() => setSharingFile(null)}
-          onLinkCreated={() => showToast("Share link generated successfully!", "success")}
+          onLinkCreated={() => {
+            showToast("Share link generated successfully!", "success");
+            if (user?.id && sharingFile) {
+              const actEntry = {
+                actor_id: user.id,
+                action: `You created a share link for ${sharingFile.filename}`,
+                resource_type: "share_link",
+                resource_id: String(sharingFile.id),
+                severity: "info",
+                created_at: new Date().toISOString(),
+              };
+              setActivityLogs((prev) => [actEntry, ...prev]);
+              supabase.from("activity_logs").insert([actEntry]).then(() => null);
+            }
+          }}
         />
       )}
 

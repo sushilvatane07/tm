@@ -1,9 +1,9 @@
 /**
  * Resilient API Fetch Helper
- * Handles CORS and network calls cleanly without premature AbortController cancellations.
+ * Handles CORS and network calls cleanly without premature AbortController cancellations or noisy console warnings.
  */
 
-export async function fetchWithTimeout(resource, options = {}, timeoutMs = 8000) {
+export async function fetchWithTimeout(resource, options = {}, timeoutMs = 3000) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -16,11 +16,6 @@ export async function fetchWithTimeout(resource, options = {}, timeoutMs = 8000)
     return response;
   } catch (error) {
     clearTimeout(id);
-    if (error.name === "AbortError") {
-      console.warn(`Fetch notice (${timeoutMs}ms) for ${resource}. Falling back to direct Supabase data.`);
-    } else {
-      console.warn(`Fetch notice for ${resource}:`, error.message);
-    }
     return null;
   }
 }

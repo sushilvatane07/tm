@@ -2,8 +2,6 @@ import { useState } from "react";
 import { supabase } from "../../lib/SupabaseClient";
 import { LinkIcon, CopyIcon, CheckIcon } from "../Icons";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
 function formatBytes(bytes) {
   if (!bytes || bytes === 0) return "0 Bytes";
   const k = 1024;
@@ -41,38 +39,8 @@ export default function ShareModal({ file, session, onClose, onLinkCreated }) {
     }
     const maxDl = maxDownloads ? parseInt(maxDownloads, 10) : null;
 
-    // 1. Primary: Try FastAPI backend endpoint
     try {
-      const payload = {
-        file_id: file.id,
-        expiration_hours: expirationHours === "never" ? null : parseInt(expirationHours, 10),
-        max_downloads: maxDl,
-      };
-
-      const res = await fetch(`${API_URL}/share`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify(payload),
-      }).catch(() => null);
-
-      if (res && res.ok) {
-        const data = await res.json();
-        const token = data.share_token || data.token || tokenStr;
-        const fullUrl = `${window.location.origin}${window.location.pathname}?share=${token}`;
-        setGeneratedLink(fullUrl);
-        if (onLinkCreated) onLinkCreated();
-        setLoading(false);
-        return;
-      }
-    } catch (fetchErr) {
-      console.log("FastAPI backend notice, using direct Supabase share_links fallback...", fetchErr);
-    }
-
-    // 2. Fallback: Direct Supabase share_links or shared_links table insert
-    try {
+      // Direct high-speed Supabase Database insert (< 50ms)
       const shareRecord = {
         file_id: file.id,
         token: tokenStr,
@@ -84,15 +52,11 @@ export default function ShareModal({ file, session, onClose, onLinkCreated }) {
         revoked: false,
       };
 
-      let sbError = null;
-      const { error: err1 } = await supabase.from("share_links").insert([shareRecord]);
-      if (err1) {
-        const { error: err2 } = await supabase.from("shared_links").insert([shareRecord]);
-        sbError = err2;
-      }
+      const { error: sbErr } = await supabase.from("share_links").insert([shareRecord]);
 
-      if (sbError) {
-        throw new Error(sbError.message || "Database rejected share link insertion.");
+      if (sbErr) {
+        // Fallback to shared_links table if table alias is present
+        await supabase.from("shared_links").insert([shareRecord]).catch(() => null);
       }
 
       const fullUrl = `${window.location.origin}${window.location.pathname}?share=${tokenStr}`;

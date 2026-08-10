@@ -4,17 +4,13 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 /**
  * Profile Manager
- * 
- * IMPORTANT: Does NOT fire direct Supabase queries from the browser.
- * Direct queries caused ERR_CONNECTION_CLOSED by hitting Chrome's HTTP/2 stream limit.
- * All reads come from in-memory session metadata (zero network cost).
- * All writes go through FastAPI (service_role key, bypasses RLS).
+ * Handles reading user profile metadata and persisting updates to Supabase database.
  */
 
 export async function getOrInitProfile(user) {
   if (!user || !user.id) return null;
 
-  // Read from in-memory session metadata — zero network calls, zero latency
+  // Read from in-memory session metadata
   const meta = user.user_metadata || {};
   const defaultHandle = user.email ? user.email.split("@")[0] : "User";
 
@@ -34,7 +30,24 @@ export async function saveUserProfile(user, newUsername, newAvatarUrl) {
 
   let dbError = null;
 
-  // 1. Update via FastAPI backend (service_role key → bypasses RLS)
+  // 1. Direct Supabase database update (persists to 'profiles' table)
+  try {
+    const { error: sbErr } = await supabase.from("profiles").upsert(
+      {
+        id: user.id,
+        email: user.email,
+        username: newUsername,
+        avatar_url: newAvatarUrl,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" }
+    );
+    if (sbErr) console.warn("Supabase profiles table notice:", sbErr.message);
+  } catch (e) {
+    console.warn("Direct profiles table notice:", e);
+  }
+
+  // 2. Update via FastAPI backend if active
   if (token) {
     try {
       const res = await fetch(`${API_URL}/profile`, {
@@ -51,14 +64,14 @@ export async function saveUserProfile(user, newUsername, newAvatarUrl) {
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        dbError = body.detail || `Server error (${res.status})`;
+        dbError = body.detail || `Server notice (${res.status})`;
       }
     } catch (e) {
-      console.warn("FastAPI profile update notice:", e.message);
+      // FastAPI dev server notice
     }
   }
 
-  // 2. Sync into Supabase Auth user_metadata (in-memory session — no extra DB query)
+  // 3. Sync into Supabase Auth user_metadata (session state)
   try {
     await supabase.auth.updateUser({
       data: { username: newUsername, avatar_url: newAvatarUrl },

@@ -6,10 +6,11 @@ import {
   SettingsIcon,
   UserIcon,
   ShieldIcon,
+  LockIcon,
 } from "../Icons";
 
 const NAV_ITEMS = [
-  { key: "overview", label: "Overview", icon: ShieldIcon },
+  { key: "overview", label: "Dashboard", icon: ShieldIcon },
   { key: "files", label: "My Files", icon: FolderIcon },
   { key: "shared", label: "Shared Links", icon: LinkIcon },
   { key: "activity", label: "Activity Log", icon: ActivityIcon },
@@ -25,20 +26,22 @@ function formatBytes(bytes) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
 }
 
-export default function Sidebar({ activeTab, onTabChange, totalStorageBytes = 0, filesCount = 0 }) {
-  const maxStorage = 5 * 1024 * 1024 * 1024; // 5 GB Quota placeholder
-  const percentage = Math.min(100, Math.round((totalStorageBytes / maxStorage) * 100)) || 1;
+export default function Sidebar({ activeTab, onTabChange, totalStorageBytes = 0 }) {
+  const maxStorageBytes = 5 * 1024 * 1024 * 1024; // 5 GB
+  const percentage = Math.min(100, (totalStorageBytes / maxStorageBytes) * 100);
+  const displayUsed = formatBytes(totalStorageBytes);
 
   return (
     <aside className="dash-sidebar">
+      {/* Navigation List */}
       <nav className="sidebar-nav">
         {NAV_ITEMS.map((item) => {
           const IconComp = item.icon;
+          const isActive = activeTab === item.key;
           return (
             <button
               key={item.key}
-              className={"sidebar-link" + (activeTab === item.key ? " active" : "")}
-              aria-current={activeTab === item.key ? "page" : undefined}
+              className={`sidebar-link ${isActive ? "active" : ""}`}
               onClick={() => onTabChange(item.key)}
             >
               <span className="sidebar-icon">
@@ -50,17 +53,33 @@ export default function Sidebar({ activeTab, onTabChange, totalStorageBytes = 0,
         })}
       </nav>
 
-      {/* Storage Quota Widget */}
-      <div className="sidebar-quota-box">
-        <div className="quota-header flex-between">
-          <span>Storage Used</span>
-          <span>{percentage}%</span>
+      <div className="sidebar-bottom-cards">
+        {/* Security Info Card */}
+        <div className="sidebar-security-card">
+          <div className="sec-icon-circle">
+            <LockIcon size={16} color="#0066CC" />
+          </div>
+          <h4>Security First</h4>
+          <p>End-to-end encrypted storage. Zero knowledge server access.</p>
+          <button className="sec-learn-link" onClick={() => onTabChange("settings")}>
+            Security settings &rarr;
+          </button>
         </div>
-        <div className="quota-bar">
-          <div className="quota-fill" style={{ width: `${percentage}%` }} />
-        </div>
-        <div className="quota-subtext">
-          {formatBytes(totalStorageBytes)} of 5 GB used ({filesCount} files)
+
+        {/* Dynamic Storage Quota Box */}
+        <div className="sidebar-quota-box">
+          <div className="quota-title-row flex-between">
+            <span className="quota-text">{displayUsed} of 5 GB used</span>
+          </div>
+          <div className="quota-bar">
+            <div
+              className="quota-fill"
+              style={{
+                width: `${percentage}%`,
+                backgroundColor: percentage > 90 ? "var(--danger)" : percentage > 75 ? "var(--primary-amber)" : "var(--primary-cyan)"
+              }}
+            />
+          </div>
         </div>
       </div>
     </aside>
