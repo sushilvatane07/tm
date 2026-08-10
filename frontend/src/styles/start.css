@@ -324,3 +324,92 @@
   color: var(--text-muted);
   font-size: 0.9rem;
 }
+
+/* ─── Responsive Media Queries ───────────────────────── */
+.desktop-only {
+  display: flex !important;
+}
+.mobile-only {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+  .mobile-only {
+    display: inline-flex !important;
+  }
+
+  .ts-header-inner {
+    padding: 0 16px;
+    height: 58px;
+  }
+
+  .ts-hero {
+    padding: 60px 16px 40px !important;
+  }
+
+  .ts-h1 {
+    font-size: 2.2rem !important;
+    line-height: 1.15 !important;
+    margin-bottom: 16px !important;
+  }
+
+  .ts-lead {
+    font-size: 1rem !important;
+    line-height: 1.45 !important;
+    margin-bottom: 28px !important;
+  }
+
+  .ts-actions {
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100%;
+  }
+
+  .ts-actions .ts-btn {
+    width: 100% !important;
+    justify-content: center;
+  }
+
+  .ts-metrics-bar {
+    margin: 40px auto 30px !important;
+    padding: 0 16px !important;
+  }
+
+  .ts-metrics-inner {
+    gap: 24px !important;
+    flex-direction: column !important;
+  }
+
+  .ts-feature-strip {
+    padding: 40px 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-page-container {
+    padding: 16px !important;
+  }
+
+  .auth-card {
+    padding: 28px 20px !important;
+    border-radius: 20px !important;
+  }
+
+  .auth-shell button.ts-link-btn {
+    position: static !important;
+    margin-bottom: 20px !important;
+  }
+
+  .auth-shield-logo {
+    width: 40px !important;
+    height: 40px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .auth-card h2.ts-h1 {
+    font-size: 1.4rem !important;
+  }
+}
