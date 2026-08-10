@@ -1,0 +1,12 @@
+# Root Git Ignore
+.env
+*.env
+node_modules/
+dist/
+__pycache__/
+*.pyc
+uploads/
+encrypted/
+decrypted/
+.DS_Store
+.vscode/

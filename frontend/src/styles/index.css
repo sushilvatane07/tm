@@ -1,0 +1,388 @@
+/* ─── Design Tokens ─────────────────────────────────── */
+:root {
+  --bg-dark: #f5f5f5;
+  --panel: #ffffff;
+  --panel-border: #e4e4e7;
+  --primary-cyan: #3b82f6;
+  --primary-cyan-dark: #2563eb;
+  --primary-violet: #8b5cf6;
+  --text-hi: #0f0f0f;
+  --text-lo: #52525b;
+  --danger: #ef4444;
+  --danger-soft: rgba(239,68,68,0.1);
+  --success: #22c55e;
+  --success-soft: rgba(34,197,94,0.1);
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+[data-theme="dark"] {
+  --bg-dark: #0c0c0c;
+  --panel: #141414;
+  --panel-border: #2a2a2a;
+  --primary-cyan: #3b82f6;
+  --primary-cyan-dark: #2563eb;
+  --primary-violet: #8b5cf6;
+  --text-hi: #f0f0f0;
+  --text-lo: #909090;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  background: var(--bg-dark);
+  color: var(--text-hi);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Loader ─────────────────────────────────────────── */
+.loader-overlay {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-dark);
+}
+
+.loader {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--panel-border);
+  border-top-color: var(--primary-cyan);
+  animation: spin 0.75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Auth Page ──────────────────────────────────────── */
+.auth-page-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  background: var(--bg-dark);
+}
+
+/* Removed orbs — no gradients, no decorative blobs */
+.auth-orb { display: none; }
+
+.auth-split-wrapper {
+  display: grid;
+  grid-template-columns: 1fr;
+  max-width: 920px;
+  width: 100%;
+  gap: 32px;
+  align-items: center;
+}
+@media (min-width: 860px) {
+  .auth-split-wrapper {
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+  }
+}
+
+/* ─── Left Showcase Panel ────────────────────────────── */
+.auth-showcase-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+@media (max-width: 859px) {
+  .auth-showcase-panel { display: none; }
+}
+
+.showcase-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.showcase-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(59,130,246,0.1);
+  border: 1px solid rgba(59,130,246,0.2);
+  color: var(--primary-cyan);
+  padding: 5px 14px;
+  border-radius: 100px;
+  font-size: 11.5px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  letter-spacing: 0.02em;
+}
+
+.showcase-content h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.18;
+  margin: 0 0 12px;
+  color: var(--text-hi);
+  letter-spacing: -0.4px;
+}
+
+.showcase-content p {
+  color: var(--text-lo);
+  font-size: 0.93rem;
+  line-height: 1.65;
+  margin: 0 0 24px;
+}
+
+.showcase-features {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.showcase-feat-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-hi);
+}
+
+.feat-check { color: var(--success); font-weight: 700; }
+
+/* ─── Auth Shell ─────────────────────────────────────── */
+.auth-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.auth-back-btn {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--text-lo);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.12s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.auth-back-btn:hover { color: var(--primary-cyan); }
+
+/* ─── Auth Card ──────────────────────────────────────── */
+.auth-card {
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  padding: 32px 28px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+
+[data-theme="dark"] .auth-card {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+.auth-shield-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: var(--primary-cyan);
+  color: #fff;
+}
+
+.auth-brand-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-hi);
+  letter-spacing: -0.2px;
+}
+
+.brand-accent { color: var(--primary-cyan); }
+
+.card-eyebrow {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary-cyan);
+  background: rgba(59,130,246,0.1);
+  padding: 3px 10px;
+  border-radius: 100px;
+  margin-bottom: 12px;
+}
+
+.card-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 5px;
+  color: var(--text-hi);
+  letter-spacing: -0.3px;
+}
+
+.card-subtitle {
+  color: var(--text-lo);
+  font-size: 13.5px;
+  line-height: 1.55;
+  margin: 0 0 22px;
+}
+
+/* ─── Form ───────────────────────────────────────────── */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-lo);
+}
+
+.input-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-input {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  color: var(--text-hi);
+  background: var(--bg-dark);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  outline: none;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+.auth-input::placeholder { color: var(--text-lo); opacity: 0.7; }
+.auth-input:focus {
+  border-color: var(--primary-cyan);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+}
+
+.toggle-password-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--text-lo);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.12s;
+}
+.toggle-password-btn:hover { color: var(--text-hi); }
+
+/* ─── Password Strength ──────────────────────────────── */
+.strength-meter-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: -4px;
+}
+
+.strength-meter-bar {
+  flex: 1;
+  height: 3px;
+  background: var(--panel-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.strength-meter-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s, background-color 0.3s;
+}
+
+.strength-label {
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+/* ─── Buttons ────────────────────────────────────────── */
+.auth-submit-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 14.5px;
+  font-weight: 700;
+  border-radius: 10px;
+  border: none;
+  background: var(--primary-cyan);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.12s, transform 0.1s;
+  letter-spacing: 0.01em;
+}
+.auth-submit-btn:hover:not(:disabled) {
+  background: var(--primary-cyan-dark);
+  transform: translateY(-1px);
+}
+.auth-submit-btn:disabled { opacity: 0.5; cursor: default; }
+
+.magic-link-btn {
+  width: 100%;
+  background: var(--bg-dark);
+  border: 1px solid var(--panel-border);
+  color: var(--text-hi);
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.12s;
+}
+.magic-link-btn:hover:not(:disabled) { border-color: var(--primary-cyan); }
+
+/* ─── Alerts ─────────────────────────────────────────── */
+.alert {
+  font-size: 13px;
+  line-height: 1.5;
+  border-radius: 8px;
+  padding: 10px 13px;
+  border: 1px solid transparent;
+}
+
+.alert-error {
+  background: var(--danger-soft);
+  border-color: rgba(239,68,68,0.25);
+  color: var(--danger);
+}
+
+.alert-success {
+  background: var(--success-soft);
+  border-color: rgba(34,197,94,0.25);
+  color: var(--success);
+}
+
+/* ─── Card Footer ────────────────────────────────────── */
+.card-footer {
+  margin-top: 18px;
+  font-size: 13.5px;
+  color: var(--text-lo);
+  text-align: center;
+}
+
+.toggle-mode-btn {
+  font-weight: 700;
+  color: var(--primary-cyan);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.12s;
+}
+.toggle-mode-btn:hover { opacity: 0.8; }
