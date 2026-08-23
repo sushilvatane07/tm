@@ -3,6 +3,18 @@ import { ShieldIcon, ArrowRightIcon, EyeIcon, EyeOffIcon } from "../components/I
 import { supabase } from "../lib/SupabaseClient";
 import "../styles/index.css"; // Ensure it gets base tokens
 
+const DISPOSABLE_EMAIL_PATTERNS = [
+  "tempmail", "temp-mail", "guerrillamail", "mailinator", "10minutemail",
+  "trashmail", "yopmail", "getnada", "dispostable", "sharklasers",
+  "fakemail", "throwaway", "crazymailing", "maildrop", "dayrep",
+  "rhyta", "teleworm", "einrot", "fleckens", "gustr", "jourrapide",
+  "superrito", "armyspy", "binkmail", "bobmail", "chacuo", "dfgh",
+  "discardmail", "dodgeit", "emailtemporal", "generator", "inboxalias",
+  "kasmail", "letthemeatspam", "mailnesia", "meltmail", "mytemp",
+  "noclickemail", "owlpic", "pookmail", "spambog", "spambox",
+  "spamfree24", "tempemail", "zippymail"
+];
+
 export default function AuthPage({ onBackToLanding, initialMode = "signin" }) {
   const [mode, setMode] = useState(initialMode);
   const [email, setEmail] = useState("");
@@ -16,18 +28,40 @@ export default function AuthPage({ onBackToLanding, initialMode = "signin" }) {
   async function handleSubmit(e) {
     e.preventDefault();
     setMessage(null);
+
+    const cleanEmail = email.trim().toLowerCase();
+    const domain = cleanEmail.split("@")[1] || "";
+
+    // 1. Basic Format Validation
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(cleanEmail)) {
+      setMessage({ type: "error", text: "Please enter a valid email address format." });
+      return;
+    }
+
+    // 2. Prohibit Temporary & Disposable Email Domains
+    const isDisposable = DISPOSABLE_EMAIL_PATTERNS.some((pattern) => domain.includes(pattern));
+
+    if (isDisposable) {
+      setMessage({
+        type: "error",
+        text: "Temporary & disposable email services are prohibited. Please sign up with a genuine email provider (e.g. Gmail, Yahoo, Outlook, or corporate email).",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error } = await supabase.auth.signUp({ email: cleanEmail, password });
         if (error) throw error;
         setMessage({
           type: "success",
           text: "Account created successfully! Please check your email inbox to confirm your account.",
         });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
         if (error) throw error;
       }
     } catch (err) {
