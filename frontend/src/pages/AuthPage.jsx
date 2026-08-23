@@ -54,8 +54,19 @@ export default function AuthPage({ onBackToLanding, initialMode = "signin" }) {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email: cleanEmail, password });
+        const { data, error } = await supabase.auth.signUp({ email: cleanEmail, password });
         if (error) throw error;
+
+        // Detect if email already exists in Supabase database (identities array is empty)
+        if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+          setMessage({
+            type: "error",
+            text: "An account with this email address already exists in the database. Please log in instead.",
+          });
+          setMode("signin");
+          return;
+        }
+
         setMessage({
           type: "success",
           text: "Account created successfully! Please check your email inbox to confirm your account.",
@@ -65,7 +76,16 @@ export default function AuthPage({ onBackToLanding, initialMode = "signin" }) {
         if (error) throw error;
       }
     } catch (err) {
-      setMessage({ type: "error", text: err.message || "Authentication failed." });
+      const errMsg = (err.message || "").toLowerCase();
+      if (errMsg.includes("already registered") || errMsg.includes("already exists") || errMsg.includes("already in use")) {
+        setMessage({
+          type: "error",
+          text: "An account with this email address already exists in the database. Please log in instead.",
+        });
+        setMode("signin");
+      } else {
+        setMessage({ type: "error", text: err.message || "Authentication failed." });
+      }
     } finally {
       setLoading(false);
     }
