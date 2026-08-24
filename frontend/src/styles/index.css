@@ -1,30 +1,29 @@
-/* ─── Apple Luxury Design System ───────── */
+/* ─── Fresh Google App Glowing Dark Design System ───────── */
 :root {
-  /* Ultra-Luxury Light Palette (Apple Style) */
-  --bg-dark: #F5F5F7; /* Soft gray background like macOS */
-  --panel: rgba(255, 255, 255, 0.85);
-  --panel-solid: #FFFFFF;
-  --panel-border: rgba(0, 0, 0, 0.05);
-  --panel-border-hover: rgba(0, 102, 204, 0.3);
+  --bg-dark: #090D16;
+  --panel: rgba(17, 24, 39, 0.75);
+  --panel-solid: #111827;
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --panel-border-hover: rgba(16, 185, 129, 0.4);
   
-  --primary-cyan: #0066CC;         /* Apple Blue */
-  --primary-cyan-dark: #004C99;
-  --primary-violet: #5E5CE6;      /* Apple Indigo */
-  --primary-emerald: #34C759;     /* Apple Green */
-  --primary-amber: #FF9F0A;       /* Apple Orange */
-  --primary-rose: #FF3B30;        /* Apple Red */
+  --primary-cyan: #10B981;         /* Fresh Emerald Mint */
+  --primary-cyan-dark: #059669;
+  --primary-violet: #6366F1;      /* Deep Indigo Glow */
+  --primary-emerald: #34D399;     /* Light Mint */
+  --primary-amber: #F59E0B;       /* Warm Amber */
+  --primary-rose: #EF4444;        /* Soft Red */
   
-  --primary-gradient: linear-gradient(180deg, #007AFF 0%, #005BB5 100%);
-  --primary-glow: transparent;
+  --primary-gradient: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  --primary-glow: rgba(16, 185, 129, 0.25);
   
-  --text-hi: #1D1D1F; /* Apple dark gray */
-  --text-lo: #86868B; /* Apple mid gray */
-  --text-muted: #98989D;
+  --text-hi: #F9FAFB;
+  --text-lo: #9CA3AF;
+  --text-muted: #6B7280;
   
-  --danger: #FF3B30;
-  --danger-soft: rgba(255, 59, 48, 0.1);
-  --success: #34C759;
-  --success-soft: rgba(52, 199, 89, 0.1);
+  --danger: #EF4444;
+  --danger-soft: rgba(239, 68, 68, 0.12);
+  --success: #10B981;
+  --success-soft: rgba(16, 185, 129, 0.12);
   
   --font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -37,57 +36,13 @@
   --radius-xl: 32px;
   --radius-full: 9999px;
   
-  --shadow-subtle: 0 2px 10px rgba(0, 0, 0, 0.03);
-  --shadow-glass: 0 8px 30px rgba(0, 0, 0, 0.06);
-  --shadow-hover: 0 14px 40px rgba(0, 0, 0, 0.08);
-  
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-blur: blur(30px) saturate(200%);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.5);
-
-  /* Dashboard Backwards Compatibility Aliases */
-  --ts-surface-1: var(--panel-solid);
-  --ts-surface-2: var(--bg-dark);
-  --ts-border: var(--panel-border);
-  --ts-border-subtle: var(--panel-border);
-  --ts-border-hover: var(--panel-border-hover);
-  --ts-text: var(--text-hi);
-  --ts-text-2: var(--text-lo);
-  --ts-text-3: var(--text-muted);
-  --ts-blue: var(--primary-cyan);
-  --ts-shadow-luxury: var(--shadow-glass);
-  --ts-shadow-hover: var(--shadow-hover);
-}
-
-[data-theme="dark"] {
-  /* Apple Dark Mode Fallback */
-  --bg-dark: #000000;
-  --panel: rgba(28, 28, 30, 0.75);
-  --panel-solid: #1C1C1E;
-  --panel-border: rgba(255, 255, 255, 0.1);
-  --panel-border-hover: rgba(10, 132, 255, 0.4);
-  
-  --primary-cyan: #0A84FF;
-  --primary-cyan-dark: #0066CC;
-  --primary-violet: #5E5CE6;
-  --primary-emerald: #32D74B;
-  --primary-amber: #FF9F0A;
-  --primary-rose: #FF453A;
-  
-  --primary-gradient: linear-gradient(180deg, #0A84FF 0%, #0066CC 100%);
-  --primary-glow: transparent;
-  
-  --text-hi: #F5F5F7;
-  --text-lo: #86868B;
-  --text-muted: #636366;
-  
   --shadow-subtle: 0 2px 10px rgba(0, 0, 0, 0.3);
   --shadow-glass: 0 8px 30px rgba(0, 0, 0, 0.4);
   --shadow-hover: 0 14px 40px rgba(0, 0, 0, 0.5);
   
-  --glass-bg: rgba(28, 28, 30, 0.65);
-  --glass-blur: blur(30px) saturate(200%);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.15);
+  --glass-bg: rgba(17, 24, 39, 0.65);
+  --glass-blur: blur(30px) saturate(180%);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.1);
 
   /* Dashboard Backwards Compatibility Aliases */
   --ts-surface-1: var(--panel-solid);

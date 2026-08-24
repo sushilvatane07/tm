@@ -147,7 +147,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(0, 102, 204, 0.08);
+  background: rgba(16, 185, 129, 0.12);
   color: var(--primary-cyan);
   font-size: 0.8rem;
   font-weight: 600;

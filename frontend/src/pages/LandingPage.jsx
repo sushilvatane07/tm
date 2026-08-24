@@ -59,7 +59,7 @@ const NAV_ITEMS = [
     title: "Direct Engineering Support",
     desc: "Have questions about our cryptographic implementation or deployment?",
     bullets: [
-      "📧 Email Support: support@trustme.app",
+      "📧 Email Support: speedexe404@gmail.com",
       "💬 GitHub Repository: Open source verification and community issue tracker.",
       "⚡ SLA Guarantee: 99.99% Uptime with redundant multi-region object storage.",
     ],
