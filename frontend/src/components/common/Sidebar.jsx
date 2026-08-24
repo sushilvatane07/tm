@@ -27,7 +27,7 @@ function formatBytes(bytes) {
 }
 
 export default function Sidebar({ activeTab, onTabChange, totalStorageBytes = 0 }) {
-  const maxStorageBytes = 5 * 1024 * 1024 * 1024; // 5 GB
+  const maxStorageBytes = 250 * 1024 * 1024; // 250 MB
   const percentage = Math.min(100, (totalStorageBytes / maxStorageBytes) * 100);
   const displayUsed = formatBytes(totalStorageBytes);
 
@@ -69,7 +69,7 @@ export default function Sidebar({ activeTab, onTabChange, totalStorageBytes = 0 
         {/* Dynamic Storage Quota Box */}
         <div className="sidebar-quota-box">
           <div className="quota-title-row flex-between">
-            <span className="quota-text">{displayUsed} of 5 GB used</span>
+            <span className="quota-text">{displayUsed} of 250 MB used</span>
           </div>
           <div className="quota-bar">
             <div

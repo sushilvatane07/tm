@@ -44,7 +44,7 @@ export default function OverviewTab({
   const [showBanner, setShowBanner] = useState(true);
 
   // Dynamic Storage Calculation with 2-Decimal Precision
-  const maxStorageBytes = 5 * 1024 * 1024 * 1024; // 5 GB
+  const maxStorageBytes = 250 * 1024 * 1024; // 250 MB
   const actualBytes = files.reduce((acc, f) => acc + (f.size_bytes || 0), 0);
   const effectiveTotalBytes = totalStorageBytes > 0 ? totalStorageBytes : actualBytes;
   
@@ -138,7 +138,7 @@ export default function OverviewTab({
             </div>
 
             <div className="flex-between" style={{ fontSize: '0.78rem', color: 'var(--text-lo)', marginTop: '2px' }}>
-              <span>Total Capacity: <strong>5.00 GB</strong></span>
+              <span>Total Capacity: <strong>250.00 MB</strong></span>
               <span>Usage: <strong>{usedPercent}%</strong></span>
             </div>
           </div>

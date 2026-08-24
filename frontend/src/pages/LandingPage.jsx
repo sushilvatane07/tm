@@ -49,7 +49,7 @@ const NAV_ITEMS = [
     title: "Simple, Transparent Vault Pricing",
     desc: "Privacy should be accessible to everyone. No hidden bandwidth fees.",
     bullets: [
-      "🎁 Free Forever Tier: 5 GB Encrypted Storage, Unlimited Share Links, Full Security Audit Log.",
+      "🎁 Free Forever Tier: 250 MB Encrypted Storage, Unlimited Share Links, Full Security Audit Log.",
       "🚀 Pro Vault Tier: 1 TB Storage, Custom Branded Share Links, Priority FastAPI Encryption Engine.",
     ],
   },
@@ -367,7 +367,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
               <div className="metric-lbl">Data Logged or Sold</div>
             </div>
             <div className="metric-item">
-              <div className="metric-val">5 GB</div>
+              <div className="metric-val">250 MB</div>
               <div className="metric-lbl">Free Vault Storage</div>
             </div>
           </div>

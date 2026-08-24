@@ -103,6 +103,17 @@ export default function DashboardPage({ activeTab = "files", onTabChange }) {
   // File Upload Handler
   async function handleUpload(selectedFile) {
     if (!selectedFile || !user?.id) return;
+
+    // Check 250 MB Storage Quota Limit
+    const MAX_QUOTA_BYTES = 250 * 1024 * 1024; // 250 MB
+    const currentUsedBytes = files.reduce((acc, f) => acc + (f.size_bytes || 0), 0);
+    if (currentUsedBytes + selectedFile.size > MAX_QUOTA_BYTES) {
+      const errText = `Upload rejected: Storing "${selectedFile.name}" exceeds your 250 MB vault storage limit.`;
+      setUploadError(errText);
+      showToast(errText, "error");
+      return;
+    }
+
     setUploading(true);
     setUploadError(null);
 
