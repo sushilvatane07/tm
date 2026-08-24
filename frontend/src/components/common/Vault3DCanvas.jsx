@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 
 /* ================================================================
-   Interactive 3D Particle Constellation & Shockwave Engine
+   Creative Holographic Encrypted Vault Matrix Visualizer
    ================================================================ */
 
 export default function Vault3DCanvas({ isFullPage = true }) {
@@ -28,38 +28,38 @@ export default function Vault3DCanvas({ isFullPage = true }) {
     handleResize();
     window.addEventListener("resize", handleResize);
 
-    // Mouse & Touch Tracking
+    // Mouse & Touch Tracking with Smooth Lerp
     const mouse = {
       x: width / 2,
       y: height / 2,
       targetX: width / 2,
       targetY: height / 2,
-      radius: 180,
+      radius: 200,
       active: false,
     };
 
-    const shockwaves = [];
+    const pulseRings = [];
 
-    // Particle Array Generator
-    const PARTICLE_COUNT = Math.min(160, Math.floor((width * height) / 9000));
-    const particles = [];
+    // Floating Data Hexagons & Node Stream
+    const NODE_COUNT = Math.min(45, Math.floor((width * height) / 22000));
+    const nodes = [];
 
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      particles.push({
+    for (let i = 0; i < NODE_COUNT; i++) {
+      nodes.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        z: Math.random() * 500,
-        vx: (Math.random() - 0.5) * 0.8,
-        vy: (Math.random() - 0.5) * 0.8,
-        radius: 1.5 + Math.random() * 2.5,
+        size: 14 + Math.random() * 22,
+        speedX: (Math.random() - 0.5) * 0.4,
+        speedY: (Math.random() - 0.5) * 0.4,
+        rotation: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.015,
+        alpha: 0.15 + Math.random() * 0.45,
         color: Math.random() > 0.4 ? "#0066CC" : Math.random() > 0.5 ? "#38bdf8" : "#818cf8",
-        alpha: 0.3 + Math.random() * 0.7,
-        pulseSpeed: 0.02 + Math.random() * 0.03,
-        pulseAngle: Math.random() * Math.PI * 2,
+        label: ["AES-256", "E2EE", "0x7F", "RSA", "TLS", "SHA-256"][Math.floor(Math.random() * 6)],
       });
     }
 
-    // Pointer Handlers
+    // Pointer Event Handlers
     const onPointerMove = (e) => {
       mouse.targetX = e.clientX;
       mouse.targetY = e.clientY;
@@ -71,26 +71,14 @@ export default function Vault3DCanvas({ isFullPage = true }) {
       mouse.targetY = e.clientY;
       mouse.active = true;
 
-      // Spawn shockwave ring on click
-      shockwaves.push({
+      // Spawn concentric pulse ring on click
+      pulseRings.push({
         x: e.clientX,
         y: e.clientY,
         radius: 10,
-        maxRadius: 240,
+        maxRadius: 280,
         alpha: 0.8,
-        speed: 8,
-      });
-
-      // Scatter nearby particles outward
-      particles.forEach((p) => {
-        const dx = p.x - e.clientX;
-        const dy = p.y - e.clientY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 200 && dist > 1) {
-          const force = (200 - dist) / 10;
-          p.vx += (dx / dist) * force;
-          p.vy += (dy / dist) * force;
-        }
+        speed: 7,
       });
     };
 
@@ -102,160 +90,204 @@ export default function Vault3DCanvas({ isFullPage = true }) {
     window.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("pointerleave", onPointerLeave);
 
-    // Animation Render Loop
+    // Draw Regular Hexagon Helper
+    const drawHexagon = (x, y, radius, angle, color, alpha) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = (Math.PI / 3) * i;
+        const px = radius * Math.cos(a);
+        const py = radius * Math.sin(a);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = alpha;
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.restore();
+    };
+
+    // Main Render Loop
     let time = 0;
 
     const render = () => {
-      time += 0.015;
+      time += 0.012;
 
-      // Clear Frame
+      // Clear Canvas Frame
       ctx.clearRect(0, 0, width, height);
 
-      // Deep Dark Ambient Radial Gradient Background
+      // Mouse Smooth Interpolation
+      mouse.x += (mouse.targetX - mouse.x) * 0.06;
+      mouse.y += (mouse.targetY - mouse.y) * 0.06;
+
+      // Deep Dark Ambient Radial Background
       const bgGrd = ctx.createRadialGradient(
         mouse.x,
         mouse.y,
-        0,
+        10,
         width / 2,
         height / 2,
-        Math.max(width, height)
+        Math.max(width, height) * 0.8
       );
-      bgGrd.addColorStop(0, "#080d1a");
-      bgGrd.addColorStop(0.5, "#050811");
-      bgGrd.addColorStop(1, "#030408");
+      bgGrd.addColorStop(0, "#0a1329");
+      bgGrd.addColorStop(0.4, "#050814");
+      bgGrd.addColorStop(1, "#020307");
       ctx.fillStyle = bgGrd;
       ctx.fillRect(0, 0, width, height);
 
-      // Smooth mouse interpolation
-      mouse.x += (mouse.targetX - mouse.x) * 0.08;
-      mouse.y += (mouse.targetY - mouse.y) * 0.08;
+      const centerX = width / 2;
+      const centerY = height / 2;
 
-      // Render & Update Shockwaves
-      for (let i = shockwaves.length - 1; i >= 0; i--) {
-        const sw = shockwaves[i];
-        sw.radius += sw.speed;
-        sw.alpha -= 0.02;
+      // ─── 1. DRAW CENTRAL HOLOGRAPHIC SECURITY SHIELD CORE ───────────
+      const coreRadius = Math.min(180, Math.min(width, height) * 0.22);
+      ctx.save();
+      ctx.translate(centerX, centerY);
 
-        if (sw.alpha <= 0 || sw.radius >= sw.maxRadius) {
-          shockwaves.splice(i, 1);
+      // Outer Rotating Security Ring 1
+      ctx.save();
+      ctx.rotate(time * 0.15);
+      ctx.beginPath();
+      ctx.arc(0, 0, coreRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(0, 102, 204, 0.25)";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([20, 12, 5, 12]);
+      ctx.stroke();
+      ctx.restore();
+
+      // Outer Rotating Security Ring 2
+      ctx.save();
+      ctx.rotate(-time * 0.22);
+      ctx.beginPath();
+      ctx.arc(0, 0, coreRadius * 0.8, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(56, 189, 248, 0.35)";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([40, 20, 10, 20]);
+      ctx.stroke();
+      ctx.restore();
+
+      // Inner Glowing Core Gradient Sphere
+      const coreGrd = ctx.createRadialGradient(0, 0, 0, 0, 0, coreRadius * 0.6);
+      coreGrd.addColorStop(0, "rgba(56, 189, 248, 0.25)");
+      coreGrd.addColorStop(0.6, "rgba(0, 102, 204, 0.12)");
+      coreGrd.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.beginPath();
+      ctx.arc(0, 0, coreRadius * 0.6, 0, Math.PI * 2);
+      ctx.fillStyle = coreGrd;
+      ctx.fill();
+
+      // Center Encrypted Shield Emblem Symbol
+      ctx.save();
+      const shieldScale = 1 + Math.sin(time * 2) * 0.04;
+      ctx.scale(shieldScale, shieldScale);
+      ctx.beginPath();
+      ctx.moveTo(0, -22);
+      ctx.lineTo(18, -12);
+      ctx.lineTo(18, 8);
+      ctx.quadraticCurveTo(18, 22, 0, 28);
+      ctx.quadraticCurveTo(-18, 22, -18, 8);
+      ctx.lineTo(-18, -12);
+      ctx.closePath();
+      ctx.strokeStyle = "#38bdf8";
+      ctx.lineWidth = 2.2;
+      ctx.shadowColor = "#38bdf8";
+      ctx.shadowBlur = 16;
+      ctx.stroke();
+
+      // Lock Keyhole Dot
+      ctx.beginPath();
+      ctx.arc(0, 2, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffffff";
+      ctx.fill();
+      ctx.restore();
+
+      ctx.restore();
+
+      // ─── 2. DRAW CLICK PULSE RINGS ────────────────────────────────
+      for (let i = pulseRings.length - 1; i >= 0; i--) {
+        const ring = pulseRings[i];
+        ring.radius += ring.speed;
+        ring.alpha -= 0.018;
+
+        if (ring.alpha <= 0 || ring.radius >= ring.maxRadius) {
+          pulseRings.splice(i, 1);
           continue;
         }
 
         ctx.save();
         ctx.beginPath();
-        ctx.arc(sw.x, sw.y, sw.radius, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(56, 189, 248, ${sw.alpha})`;
+        ctx.arc(ring.x, ring.y, ring.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(56, 189, 248, ${ring.alpha})`;
         ctx.lineWidth = 2;
         ctx.shadowColor = "#38bdf8";
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = 14;
         ctx.stroke();
         ctx.restore();
       }
 
-      // Update & Draw Particles
-      particles.forEach((p, idx) => {
-        // Natural Drift
-        p.x += p.vx;
-        p.y += p.vy;
-
-        // Friction / Speed damping
-        p.vx *= 0.98;
-        p.vy *= 0.98;
-
-        // Maintain minimum velocity
-        if (Math.abs(p.vx) < 0.2) p.vx += (Math.random() - 0.5) * 0.1;
-        if (Math.abs(p.vy) < 0.2) p.vy += (Math.random() - 0.5) * 0.1;
+      // ─── 3. DRAW FLOATING CRYPTOGRAPHIC DATA NODES ───────────────
+      nodes.forEach((n) => {
+        n.x += n.speedX;
+        n.y += n.speedY;
+        n.rotation += n.rotSpeed;
 
         // Viewport Bounce Bounds
-        if (p.x < 0) { p.x = 0; p.vx *= -1; }
-        if (p.x > width) { p.x = width; p.vx *= -1; }
-        if (p.y < 0) { p.y = 0; p.vy *= -1; }
-        if (p.y > height) { p.y = height; p.vy *= -1; }
+        if (n.x < 0 || n.x > width) n.speedX *= -1;
+        if (n.y < 0 || n.y > height) n.speedY *= -1;
 
-        // Cursor Magnetic Attraction / Repulsion
+        // Mouse Parallax Offset
+        let parallaxX = 0;
+        let parallaxY = 0;
         if (mouse.active) {
-          const dx = mouse.x - p.x;
-          const dy = mouse.y - p.y;
+          const dx = mouse.x - n.x;
+          const dy = mouse.y - n.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-
           if (dist < mouse.radius && dist > 1) {
             const force = (mouse.radius - dist) / mouse.radius;
-            const angle = Math.atan2(dy, dx);
-            
-            // Subtle orbital pull around cursor
-            p.vx += Math.cos(angle + Math.PI / 2) * force * 0.4;
-            p.vy += Math.sin(angle + Math.PI / 2) * force * 0.4;
+            parallaxX = (dx / dist) * force * 15;
+            parallaxY = (dy / dist) * force * 15;
           }
         }
 
-        // Particle Glow Pulse
-        p.pulseAngle += p.pulseSpeed;
-        const currentAlpha = Math.max(0.2, p.alpha + Math.sin(p.pulseAngle) * 0.25);
-        const currentRadius = Math.max(1, p.radius + Math.sin(p.pulseAngle) * 0.5);
+        const drawX = n.x + parallaxX;
+        const drawY = n.y + parallaxY;
 
-        // Draw Particle Circle
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, currentRadius, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = currentAlpha;
-        ctx.shadowColor = p.color;
-        ctx.shadowBlur = 8;
-        ctx.fill();
-        ctx.restore();
+        // Draw Hexagon Geometry
+        drawHexagon(drawX, drawY, n.size, n.rotation, n.color, n.alpha);
 
-        // Connect Laser Lines to Nearby Particles
-        for (let j = idx + 1; j < particles.length; j++) {
-          const p2 = particles[j];
-          const dx = p.x - p2.x;
-          const dy = p.y - p2.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          const maxDist = 130;
-          if (dist < maxDist) {
-            const lineAlpha = (1 - dist / maxDist) * 0.35;
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.strokeStyle = `rgba(0, 102, 204, ${lineAlpha})`;
-            ctx.lineWidth = 0.8;
-            ctx.stroke();
-          }
-        }
-
-        // Draw Laser Connection Line to Cursor
-        if (mouse.active) {
-          const dx = mouse.x - p.x;
-          const dy = mouse.y - p.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          if (dist < mouse.radius) {
-            const lineAlpha = (1 - dist / mouse.radius) * 0.5;
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(mouse.x, mouse.y);
-            ctx.strokeStyle = `rgba(56, 189, 248, ${lineAlpha})`;
-            ctx.lineWidth = 1;
-            ctx.stroke();
-          }
+        // Draw Crypto Text Label inside large nodes
+        if (n.size > 20) {
+          ctx.save();
+          ctx.font = "10px monospace";
+          ctx.fillStyle = n.color;
+          ctx.globalAlpha = n.alpha * 0.85;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(n.label, drawX, drawY);
+          ctx.restore();
         }
       });
 
-      // Draw Cursor Energy Halo
+      // ─── 4. CURSOR GLOW LIGHT SPOTLIGHT ───────────────────────────
       if (mouse.active) {
         ctx.save();
+        const cursorGrd = ctx.createRadialGradient(
+          mouse.x,
+          mouse.y,
+          0,
+          mouse.x,
+          mouse.y,
+          80
+        );
+        cursorGrd.addColorStop(0, "rgba(56, 189, 248, 0.2)");
+        cursorGrd.addColorStop(1, "rgba(56, 189, 248, 0)");
         ctx.beginPath();
-        ctx.arc(mouse.x, mouse.y, 6, 0, Math.PI * 2);
-        ctx.fillStyle = "#38bdf8";
-        ctx.shadowColor = "#38bdf8";
-        ctx.shadowBlur = 16;
+        ctx.arc(mouse.x, mouse.y, 80, 0, Math.PI * 2);
+        ctx.fillStyle = cursorGrd;
         ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(mouse.x, mouse.y, 24 + Math.sin(time * 4) * 4, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(56, 189, 248, 0.3)";
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
         ctx.restore();
       }
 
@@ -291,7 +323,7 @@ export default function Vault3DCanvas({ isFullPage = true }) {
           width: "100%",
           height: "100%",
           display: "block",
-          cursor: "crosshair",
+          cursor: "default",
         }}
       />
       <div
@@ -302,20 +334,20 @@ export default function Vault3DCanvas({ isFullPage = true }) {
           left: "50%",
           transform: "translateX(-50%)",
           font: "12px/1.4 'Inter', system-ui, sans-serif",
-          color: "rgba(255, 255, 255, 0.45)",
+          color: "rgba(255, 255, 255, 0.5)",
           pointerEvents: "none",
           textAlign: "center",
           userSelect: "none",
           letterSpacing: "0.06em",
-          background: "rgba(0,0,0,0.5)",
-          padding: "5px 16px",
+          background: "rgba(0, 0, 0, 0.55)",
+          padding: "6px 18px",
           borderRadius: "100px",
-          backdropFilter: "blur(8px)",
-          border: "1px solid rgba(255,255,255,0.1)",
+          backdropFilter: "blur(10px)",
+          border: "1px solid rgba(255, 255, 255, 0.12)",
           zIndex: 100,
         }}
       >
-        move cursor to connect nodes &middot; click to trigger pulse burst
+        move cursor to interact &middot; click to trigger security pulse
       </div>
     </div>
   );
