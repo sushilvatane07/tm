@@ -151,17 +151,39 @@ export default function PublicSharePage({ shareToken, onGoHome }) {
           return;
         }
       } catch (e) {
-        console.warn("FastAPI stream notice, using direct storage download fallback...", e);
+        console.warn("FastAPI stream notice, using public storage download fallback...", e);
       }
     }
 
     try {
       if (fileInfo?.storage_path) {
-        const { data: fileData, error: dlErr } = await supabase.storage
+        // 1. Try public storage URL first (allows unauthenticated guest recipient downloads)
+        const { data: publicUrlData } = supabase.storage
           .from("trustshare-files")
-          .download(fileInfo.storage_path);
+          .getPublicUrl(fileInfo.storage_path);
 
-        if (dlErr) throw dlErr;
+        let fileBlob = null;
+
+        if (publicUrlData?.publicUrl) {
+          try {
+            const pubRes = await fetch(publicUrlData.publicUrl);
+            if (pubRes.ok) {
+              fileBlob = await pubRes.blob();
+            }
+          } catch (e) {
+            console.warn("Public URL fetch notice, trying direct storage download...", e);
+          }
+        }
+
+        // 2. Fallback to direct storage download
+        if (!fileBlob) {
+          const { data: fileData, error: dlErr } = await supabase.storage
+            .from("trustshare-files")
+            .download(fileInfo.storage_path);
+
+          if (dlErr) throw dlErr;
+          fileBlob = fileData;
+        }
 
         // Increment download counter
         if (fileInfo.id) {
@@ -172,7 +194,7 @@ export default function PublicSharePage({ shareToken, onGoHome }) {
             .then(() => null);
         }
 
-        const blobUrl = window.URL.createObjectURL(fileData);
+        const blobUrl = window.URL.createObjectURL(fileBlob);
         const a = document.createElement("a");
         a.href = blobUrl;
         a.download = fileInfo.filename;
@@ -202,11 +224,32 @@ export default function PublicSharePage({ shareToken, onGoHome }) {
 
     try {
       if (fileInfo?.storage_path) {
-        const { data: fileData, error: dlErr } = await supabase.storage
-          .from("trustshare-files")
-          .download(fileInfo.storage_path);
+        let fileData = null;
 
-        if (!dlErr && fileData) {
+        // Try public storage URL first for unauthenticated guest previews
+        const { data: publicUrlData } = supabase.storage
+          .from("trustshare-files")
+          .getPublicUrl(fileInfo.storage_path);
+
+        if (publicUrlData?.publicUrl) {
+          try {
+            const pubRes = await fetch(publicUrlData.publicUrl);
+            if (pubRes.ok) {
+              fileData = await pubRes.blob();
+            }
+          } catch (e) {}
+        }
+
+        if (!fileData) {
+          const { data: dlData, error: dlErr } = await supabase.storage
+            .from("trustshare-files")
+            .download(fileInfo.storage_path);
+          if (!dlErr && dlData) {
+            fileData = dlData;
+          }
+        }
+
+        if (fileData) {
           const filename = fileInfo?.filename || "";
           const ext = filename.includes(".") ? filename.split(".").pop().toLowerCase() : "";
           if (["jpg", "jpeg", "png", "gif", "svg", "webp"].includes(ext)) {
