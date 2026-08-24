@@ -39,13 +39,11 @@ export default function AuthPage({ onBackToLanding, initialMode = "signin" }) {
       return;
     }
 
-    // 2. Prohibit Temporary & Disposable Email Domains
-    const isDisposable = DISPOSABLE_EMAIL_PATTERNS.some((pattern) => domain.includes(pattern));
-
-    if (isDisposable) {
+    // 2. Strictly Require @gmail.com Domain
+    if (domain !== "gmail.com") {
       setMessage({
         type: "error",
-        text: "Temporary & disposable email services are prohibited. Please sign up with a genuine email provider (e.g. Gmail, Yahoo, Outlook, or corporate email).",
+        text: "Only genuine @gmail.com email addresses are allowed to create an account. Other email domains are not permitted.",
       });
       return;
     }
